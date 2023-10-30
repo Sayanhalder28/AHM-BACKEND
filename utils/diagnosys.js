@@ -13,7 +13,7 @@ const generateDummySignal = (sampleRate, duration) => {
   const frequencyCounts = 10;
 
   // Generate random frequencies
-  const frequencies = [22, 50, 100, 150];
+  const frequencies = [22, 50, 100, 150, 200];
   // for (let i = 0; i < frequencyCounts; i++) {
   //   const frequency =
   //     Math.floor(Math.random() * (maxFrequency - minFrequency + 1)) +
@@ -64,7 +64,7 @@ const generateSpectrum = (complexSignal, sampleRate, fftSampleCount) => {
   };
 };
 
-const calculatePeakValues = (spectrumData, peakThreshold, peakDistance) => {
+const calculatePeak = (spectrumData, peakThreshold, peakDistance) => {
   const peaks = [];
   //compare every conjusent points and find the peaks
   for (let i = 0; i < spectrumData.magnitude.length; i++) {
@@ -90,8 +90,17 @@ const calculatePeakValues = (spectrumData, peakThreshold, peakDistance) => {
   return peaks;
 };
 
-const generateReport = (peakFrequencies, assetSpecifications) => {
+const generateReport = (all_freequency_peaks, assetSpecifications) => {
   // const report = ["imbalance", "misalignment", "bearing", "eccentricity"];
+
+  const XVB_peaks = all_freequency_peaks.XVB_peaks;
+  const YVB_peaks = all_freequency_peaks.YVB_peaks;
+  const ZVB_peaks = all_freequency_peaks.ZVB_peaks;
+  const XMF_peaks = all_freequency_peaks.XMF_peaks;
+  const YMF_peaks = all_freequency_peaks.YMF_peaks;
+  const ZMF_peaks = all_freequency_peaks.ZMF_peaks;
+  const US_peaks = all_freequency_peaks.US_peaks;
+
   const report = [];
   const ratedFrequency = assetSpecifications.ratedRPM / 60;
   const tolerance = 5; //in percentage
@@ -106,7 +115,8 @@ const generateReport = (peakFrequencies, assetSpecifications) => {
 
   // Diagnosing using all harmonic,subharmonic and half harmonic values
   const allHarmonics = harmonics.concat(halfHarmonics);
-  const faultyFrequecies = peakFrequencies.filter((frequency) => {
+
+  const XVB_peaks_faults = XVB_peaks.filter((frequency) => {
     return allHarmonics.some((fundFreqValue) => {
       return (
         frequency > fundFreqValue * ((100 - tolerance) / 100) &&
@@ -114,25 +124,27 @@ const generateReport = (peakFrequencies, assetSpecifications) => {
       );
     });
   });
-  console.log(faultyFrequecies);
-  if (faultyFrequecies.length) {
-    if (faultyFrequecies.length >= 2) {
+
+  //check for misalignment
+
+  if (XVB_peaks_faults.length) {
+    if (XVB_peaks_faults.length >= 2) {
       if (
-        faultyFrequecies[0] > ratedFrequency * ((100 - tolerance) / 100) &&
-        faultyFrequecies[0] < ratedFrequency * ((100 + tolerance) / 100) &&
-        faultyFrequecies[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
-        faultyFrequecies[1] < ratedFrequency * 2 * ((100 + tolerance) / 100)
+        XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
+        XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
+        XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
+        XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100)
       )
         report.push("Bent Shaft");
     }
-    if (faultyFrequecies.length >= 3) {
+    if (XVB_peaks_faults.length >= 3) {
       if (
-        faultyFrequecies[0] > ratedFrequency * ((100 - tolerance) / 100) &&
-        faultyFrequecies[0] < ratedFrequency * ((100 + tolerance) / 100) &&
-        faultyFrequecies[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
-        faultyFrequecies[1] < ratedFrequency * 2 * ((100 + tolerance) / 100) &&
-        faultyFrequecies[2] > ratedFrequency * 3 * ((100 - tolerance) / 100) &&
-        faultyFrequecies[2] < ratedFrequency * 3 * ((100 + tolerance) / 100)
+        XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
+        XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
+        XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
+        XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100) &&
+        XVB_peaks_faults[2] > ratedFrequency * 3 * ((100 - tolerance) / 100) &&
+        XVB_peaks_faults[2] < ratedFrequency * 3 * ((100 + tolerance) / 100)
       )
         report.push("Miss Alignment");
     }
@@ -161,13 +173,12 @@ const generateReport = (peakFrequencies, assetSpecifications) => {
   //   );
   // });
   // if (bearingCageDefect.length) report.push("Bearing cage defect");
-
   return report;
 };
 
 module.exports = {
   generateDummySignal,
   generateSpectrum,
-  calculatePeakValues,
+  calculatePeak,
   generateReport,
 };

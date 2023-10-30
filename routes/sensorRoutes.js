@@ -7,8 +7,9 @@ router.post("/register-sensor", sensorControllers.registerSensor);
 
 router.get("/sesor-health", sensorControllers.sensorHealth);
 
-router.get("/sensor-data", sensorControllers.sensorReadings);
+router.get("/sensor-threshold", sensorControllers.sensorThresholdValues);
 
+router.get("/sensor-data", sensorControllers.sensorReadings);
 
 
 module.exports = { router };

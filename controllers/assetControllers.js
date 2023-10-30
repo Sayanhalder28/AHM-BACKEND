@@ -2,7 +2,7 @@ const pool = require("../config/db").pool;
 const {
   generateDummySignal,
   generateSpectrum,
-  calculatePeakValues,
+  calculatePeak,
   generateReport,
 } = require("../utils/diagnosys");
 
@@ -158,16 +158,34 @@ const getAssetList = async (req, res, next) => {
 const diagnoseAsset = async (req, res, next) => {
   // ** // generate dummy signal -->> this will be replaced by the vibration data from the database or direct from device in the future
   const sampleRate = 5000;
-  const Signal = generateDummySignal(sampleRate, 1); // takes sample rate and duration as argument
+  const XVB_Signal = generateDummySignal(sampleRate, 1); // Radial vibration in X axis
+  const YVB_Signal = generateDummySignal(sampleRate, 1);
+  const ZVB_Signal = generateDummySignal(sampleRate, 1);
+  const XMF_Signal = generateDummySignal(sampleRate, 1);
+  const YMF_Signal = generateDummySignal(sampleRate, 1);
+  const ZMF_Signal = generateDummySignal(sampleRate, 1);
+  const UU_Signal = generateDummySignal(sampleRate, 1);
 
   // ** // Generate the spectrum from complex signal
   const fftSampleCount = 4096; // must ge greater than the 1 and a power of 2
-  const spectrumData = generateSpectrum(Signal, sampleRate, fftSampleCount); // takes complex signal, sample rate and fft sample count as argument
+  const XVB_Spectrum = generateSpectrum(XVB_Signal, sampleRate, fftSampleCount); // takes complex signal, sample rate and fft sample count as argument
+  const YVB_Spectrum = generateSpectrum(YVB_Signal, sampleRate, fftSampleCount);
+  const ZVB_Spectrum = generateSpectrum(ZVB_Signal, sampleRate, fftSampleCount);
+  const XMF_Spectrum = generateSpectrum(XMF_Signal, sampleRate, fftSampleCount);
+  const YMF_Spectrum = generateSpectrum(YMF_Signal, sampleRate, fftSampleCount);
+  const ZMF_Spectrum = generateSpectrum(ZMF_Signal, sampleRate, fftSampleCount);
+  const US_Spectrum = generateSpectrum(UU_Signal, sampleRate, fftSampleCount);
 
-  // ** // Find the peakes from the spectrum data
+  // ** // Find pB_om the spectrum data
   const peakThreshold = 0.3;
   const peakDistance = 10;
-  const peaks = calculatePeakValues(spectrumData, peakThreshold, peakDistance); // takes spectrum data, peak threshold and peak distance as argument
+  const XVB_peaks = calculatePeak(XVB_Spectrum, peakThreshold, peakDistance); // takes spectrum data, peak threshold and peak distance as argument
+  const YVB_peaks = calculatePeak(YVB_Spectrum, peakThreshold, peakDistance);
+  const ZVB_peaks = calculatePeak(ZVB_Spectrum, peakThreshold, peakDistance);
+  const XMF_peaks = calculatePeak(XMF_Spectrum, peakThreshold, peakDistance);
+  const YMF_peaks = calculatePeak(YMF_Spectrum, peakThreshold, peakDistance);
+  const ZMF_peaks = calculatePeak(ZMF_Spectrum, peakThreshold, peakDistance);
+  const US_peaks = calculatePeak(US_Spectrum, peakThreshold, peakDistance);
 
   // ** // generate the report
   const assetSpecifications = {
@@ -181,13 +199,27 @@ const diagnoseAsset = async (req, res, next) => {
     ratedTorque: 1000,
     ratedSpeed: 1000,
   };
-  const report = generateReport(peaks, assetSpecifications); // takes peaks and spectrum data as argument
+
+  const all_freequency_peaks = {
+    XVB_peaks: XVB_peaks,
+    YVB_peaks: YVB_peaks,
+    ZVB_peaks: ZVB_peaks,
+    XMF_peaks: XMF_peaks,
+    YMF_peaks: YMF_peaks,
+    ZMF_peaks: ZMF_peaks,
+    US_peaks: US_peaks,
+  };
+
+  const DiagnosysReport = generateReport(
+    all_freequency_peaks,
+    assetSpecifications
+  ); // takes peaks and spectrum data as argument
 
   // ** // send response to the client along with the data
   res.render("page", {
-    spectrumData: spectrumData,
-    peakFrequencies: peaks,
-    dyagnoseReport: report,
+    spectrumData: XVB_Spectrum,
+    peakFrequencies: XVB_peaks,
+    dyagnoseReport: DiagnosysReport,
   });
   // res.success(200, "Spectrum generated", spectrumData);
 };

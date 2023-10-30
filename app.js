@@ -57,8 +57,8 @@ const startServer = async () => {
       console.log(`Server is up at ${Port}`);
     });
   } else {
-    console.log("Server is not up");
-    // setTimeout(startServer, 5000);
+    console.log("Server is not up .  Retrying .....");
+    setTimeout(startServer, 5000);
   }
 };
 startServer();
