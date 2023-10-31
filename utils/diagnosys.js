@@ -13,7 +13,9 @@ const generateDummySignal = (sampleRate, duration) => {
   const frequencyCounts = 10;
 
   // Generate random frequencies
-  const frequencies = [22, 50, 100, 150, 200];
+  // const frequencies = [22, 50, 100, 150, 200];
+  const frequencies = [50,100];
+
   // for (let i = 0; i < frequencyCounts; i++) {
   //   const frequency =
   //     Math.floor(Math.random() * (maxFrequency - minFrequency + 1)) +
@@ -93,16 +95,16 @@ const calculatePeak = (spectrumData, peakThreshold, peakDistance) => {
 const generateReport = (all_freequency_peaks, assetSpecifications) => {
   // const report = ["imbalance", "misalignment", "bearing", "eccentricity"];
 
-  const XVB_peaks = all_freequency_peaks.XVB_peaks;
-  const YVB_peaks = all_freequency_peaks.YVB_peaks;
-  const ZVB_peaks = all_freequency_peaks.ZVB_peaks;
+  const XVB_peaks = all_freequency_peaks.XVB_peaks; //radial vibration
+  const YVB_peaks = all_freequency_peaks.YVB_peaks; //axial vibration
+  const ZVB_peaks = all_freequency_peaks.ZVB_peaks; //vertical vibration
   const XMF_peaks = all_freequency_peaks.XMF_peaks;
   const YMF_peaks = all_freequency_peaks.YMF_peaks;
   const ZMF_peaks = all_freequency_peaks.ZMF_peaks;
   const US_peaks = all_freequency_peaks.US_peaks;
 
   const report = [];
-  const ratedFrequency = assetSpecifications.ratedRPM / 60;
+  const ratedFrequency = assetSpecifications.ratedRPM / 60; //1x frequency
   const tolerance = 5; //in percentage
   // check for imbalance
   const harmonics = new Array(10)
@@ -114,56 +116,86 @@ const generateReport = (all_freequency_peaks, assetSpecifications) => {
     .map((_, index) => ratedFrequency * (index + 1) * 0.5);
 
   // Diagnosing using all harmonic,subharmonic and half harmonic values
-  const allHarmonics = harmonics.concat(halfHarmonics);
+  const completeHarmonics = harmonics.concat(halfHarmonics);
 
-  const XVB_peaks_faults = XVB_peaks.filter((frequency) => {
-    return allHarmonics.some((fundFreqValue) => {
-      return (
-        frequency > fundFreqValue * ((100 - tolerance) / 100) &&
-        frequency < fundFreqValue * ((100 + tolerance) / 100)
-      );
-    });
-  });
+  // const XVB_peaks_faults = XVB_peaks.filter((frequency) => {
+  //   return completeHarmonics.some((fundFreqValue) => {
+  //     return (
+  //       frequency > fundFreqValue * ((100 - tolerance) / 100) &&
+  //       frequency < fundFreqValue * ((100 + tolerance) / 100)
+  //     );
+  //   });
+  // });
 
   //check for misalignment
 
-  if (XVB_peaks_faults.length) {
-    if (XVB_peaks_faults.length >= 2) {
-      if (
-        XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
-        XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
-        XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
-        XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100)
-      )
-        report.push("Bent Shaft");
-    }
-    if (XVB_peaks_faults.length >= 3) {
-      if (
-        XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
-        XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
-        XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
-        XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100) &&
-        XVB_peaks_faults[2] > ratedFrequency * 3 * ((100 - tolerance) / 100) &&
-        XVB_peaks_faults[2] < ratedFrequency * 3 * ((100 + tolerance) / 100)
-      )
-        report.push("Miss Alignment");
-    }
-    if (true) {
-      report.push("looseness");
-    }
-    if (true) {
-      report.push("Oil whirl");
-    }
-    if (true) {
-      report.push("Lubrication issues");
-    }
-    if (true) {
-      report.push("Bearing outer race issues");
-    }
-    if (true) {
-      report.push("Bearing rolling element issues");
-    } else report.push("Machine Imbalance");
+  if (XVB_peaks.length) {
+    //check is ther any 1x frequency in XVB_peaks array elements
+    const is1xFrequency = XVB_peaks.some((frequency) => {
+      return (
+        frequency > ratedFrequency * ((100 - tolerance) / 100) &&
+        frequency < ratedFrequency * ((100 + tolerance) / 100)
+      );
+    });
+    if (is1xFrequency) report.push("Plane imbalance");
   }
+
+  if (XVB_peaks.length && YVB_peaks.length) {
+    //check is ther any 1x frequency in XVB_peaks array elements
+    const is1xInXVB = XVB_peaks.some((frequency) => {
+      return (
+        frequency > ratedFrequency * ((100 - tolerance) / 100) &&
+        frequency < ratedFrequency * ((100 + tolerance) / 100)
+      );
+    });
+
+    const is1xInYVB = YVB_peaks.some((frequency) => {
+      return (
+        frequency > ratedFrequency * ((100 - tolerance) / 100) &&
+        frequency < ratedFrequency * ((100 + tolerance) / 100)
+      );
+    });
+
+    if (is1xInXVB && is1xInYVB) report.push("Overhung rotor");
+  }
+
+  // if (XVB_peaks_faults.length) {
+  //   if (XVB_peaks_faults.length >= 2) {
+  //     if (
+  //       XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
+  //       XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
+  //       XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
+  //       XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100)
+  //     )
+  //       report.push("Bent Shaft");
+  //   }
+  //   if (XVB_peaks_faults.length >= 3) {
+  //     if (
+  //       XVB_peaks_faults[0] > ratedFrequency * ((100 - tolerance) / 100) &&
+  //       XVB_peaks_faults[0] < ratedFrequency * ((100 + tolerance) / 100) &&
+  //       XVB_peaks_faults[1] > ratedFrequency * 2 * ((100 - tolerance) / 100) &&
+  //       XVB_peaks_faults[1] < ratedFrequency * 2 * ((100 + tolerance) / 100) &&
+  //       XVB_peaks_faults[2] > ratedFrequency * 3 * ((100 - tolerance) / 100) &&
+  //       XVB_peaks_faults[2] < ratedFrequency * 3 * ((100 + tolerance) / 100)
+  //     )
+  //       report.push("Miss Alignment");
+  //   }
+  //   if (true) {
+  //     report.push("looseness");
+  //   }
+  //   if (true) {
+  //     report.push("Oil whirl");
+  //   }
+  //   if (true) {
+  //     report.push("Lubrication issues");
+  //   }
+  //   if (true) {
+  //     report.push("Bearing outer race issues");
+  //   }
+  //   if (true) {
+  //     report.push("Bearing rolling element issues");
+  //   } else report.push("Machine Imbalance");
+  // }
 
   // check for oil whirl
   // const bearingCageDefect = peakFrequencies.filter((frequency) => {
@@ -173,6 +205,7 @@ const generateReport = (all_freequency_peaks, assetSpecifications) => {
   //   );
   // });
   // if (bearingCageDefect.length) report.push("Bearing cage defect");
+  report.push("Rated Frequency :" + ratedFrequency);
   return report;
 };
 

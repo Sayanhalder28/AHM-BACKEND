@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS sensors (
   `asset_id_fk` VARCHAR(100) NOT NULL,
   `temperature_min` INT NOT NULL DEFAULT 0,
   `temperature_healthy` INT NOT NULL DEFAULT 75,
-  `temperature_wraning` INT NOT NULL DEFAULT 85,
+  `temperature_warning` INT NOT NULL DEFAULT 85,
   `temperature_max` INT NOT NULL DEFAULT 100,
   `vibration_min` INT NOT NULL DEFAULT 0,
   `vibration_healthy` INT NOT NULL DEFAULT 5,

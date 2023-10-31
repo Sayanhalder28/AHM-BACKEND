@@ -159,8 +159,8 @@ const diagnoseAsset = async (req, res, next) => {
   // ** // generate dummy signal -->> this will be replaced by the vibration data from the database or direct from device in the future
   const sampleRate = 5000;
   const XVB_Signal = generateDummySignal(sampleRate, 1); // Radial vibration in X axis
-  const YVB_Signal = generateDummySignal(sampleRate, 1);
-  const ZVB_Signal = generateDummySignal(sampleRate, 1);
+  const YVB_Signal = generateDummySignal(sampleRate, 1); // Axial Vibration in Y axis
+  const ZVB_Signal = generateDummySignal(sampleRate, 1); // Tangential Vibration in Z axis
   const XMF_Signal = generateDummySignal(sampleRate, 1);
   const YMF_Signal = generateDummySignal(sampleRate, 1);
   const ZMF_Signal = generateDummySignal(sampleRate, 1);
@@ -177,7 +177,7 @@ const diagnoseAsset = async (req, res, next) => {
   const US_Spectrum = generateSpectrum(UU_Signal, sampleRate, fftSampleCount);
 
   // ** // Find pB_om the spectrum data
-  const peakThreshold = 0.3;
+  const peakThreshold = 500;
   const peakDistance = 10;
   const XVB_peaks = calculatePeak(XVB_Spectrum, peakThreshold, peakDistance); // takes spectrum data, peak threshold and peak distance as argument
   const YVB_peaks = calculatePeak(YVB_Spectrum, peakThreshold, peakDistance);
