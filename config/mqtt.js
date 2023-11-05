@@ -17,24 +17,36 @@ const options = {
 };
 const client = mqtt.connect(connectUrl, options);
 
-const dummyData = JSON.stringify({
-  temperature: 22,
-  vibration_x: 25,
-  vibration_y: 25,
-  vibration_z: 25,
-  vibration_peak: 25,
-  magnetic_flux_x: 25,
-  magnetic_flux_y: 25,
-  magnetic_flux_z: 25,
-  magnetic_flux_peak: 25,
-  ultrasound: 25,
-  ultrasound_delta: 25,
-  health_status: 25,
-});
-
 function publishMessage() {
+  const dummyData = JSON.stringify({
+    temperature: Math.floor(Math.random() * 100) + 1,
+    vibration_x: Math.floor(Math.random() * (5 - 3)) + 3,
+    vibration_y: Math.floor(Math.random() * (5 - 3)) + 3,
+    vibration_z: Math.floor(Math.random() * (5 - 3)) + 3,
+    vibration_peak: Math.floor(Math.random() * (14 - 3)) + 3,
+    magnetic_flux_x: Math.floor(Math.random() * (5 - 3)) + 3,
+    magnetic_flux_y: Math.floor(Math.random() * (5 - 3)) + 3,
+    magnetic_flux_z: Math.floor(Math.random() * (5 - 3)) + 3,
+    magnetic_flux_peak: Math.floor(Math.random() * (5 - 3)) + 3,
+    ultrasound: Math.floor(Math.random() * (5 - 3)) + 3,
+    ultrasound_delta: Math.floor(Math.random() * (8 - 3)) + 3,
+  });
+
+  // const dummyData = JSON.stringify({
+  //   temperature: 3,
+  //   vibration_x: 3,
+  //   vibration_y: 3,
+  //   vibration_z: 3,
+  //   vibration_peak: 3,
+  //   magnetic_flux_x: 3,
+  //   magnetic_flux_y: 3,
+  //   magnetic_flux_z: 3,
+  //   magnetic_flux_peak: 12,
+  //   ultrasound: 3,
+  //   ultrasound_delta: 3,
+  // });
   client.publish(
-    "IEMA/AHM/two",
+    "IEMA/AHM/NODE1",
     dummyData,
     { qos: 0, retain: false },
     (error) => {
@@ -64,7 +76,7 @@ client.on("connect", async (connack) => {
         error
       );
     });
-  // setInterval(publishMessage, 2000); //publishing the fake massage to the broker
+  setInterval(publishMessage, 4000); //publishing the fake massage to the broker
 });
 
 client.on("message", async (topic, payload) => {
@@ -85,26 +97,46 @@ client.on("message", async (topic, payload) => {
         // prepare the asset data table name
         const assetDataTableName = `asset_data_${assetTableData[0].sensor_type}_${assetTableData[0].asset_id_fk}`;
         // calculate the health status
+        // console.log(assetTableData[0]);
         let health_status = "healthy";
         if (
-          data.temperature > assetTableData[0].temperature_healthy ||
-          data.vibration_x > assetTableData[0].vibration_healthy ||
-          data.vibration_y > assetTableData[0].vibration_healthy ||
-          data.vibration_z > assetTableData[0].vibration_healthy ||
-          data.magnetic_flux_x > assetTableData[0].vibration_healthy ||
-          data.magnetic_flux_y > assetTableData[0].vibration_healthy ||
-          data.magnetic_flux_z > assetTableData[0].vibration_healthy
+          (data.temperature >= assetTableData[0].temperature_healthy &&
+            data.temperature < assetTableData[0].temperature_warning) ||
+          (data.vibration_x >= assetTableData[0].vibration_healthy &&
+            data.vibration_x < assetTableData[0].vibration_warning) ||
+          (data.vibration_y >= assetTableData[0].vibration_healthy &&
+            data.vibration_y < assetTableData[0].vibration_warning) ||
+          (data.vibration_z >= assetTableData[0].vibration_healthy &&
+            data.vibration_z < assetTableData[0].vibration_warning) ||
+          (data.vibration_peak >= assetTableData[0].vibration_healthy &&
+            data.vibration_peak < assetTableData[0].vibration_warning) ||
+          (data.magnetic_flux_x >= assetTableData[0].magnetic_flux_healthy &&
+            data.magnetic_flux_x < assetTableData[0].vibration_warning) ||
+          (data.magnetic_flux_y >= assetTableData[0].magnetic_flux_healthy &&
+            data.magnetic_flux_y < assetTableData[0].magnetic_flux_warning) ||
+          (data.magnetic_flux_z >= assetTableData[0].magnetic_flux_healthy &&
+            data.magnetic_flux_z < assetTableData[0].magnetic_flux_warning) ||
+          (data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_healthy &&
+            data.magnetic_flux_peak < assetTableData[0].magnetic_flux_warning) ||
+          (data.ultrasound >= assetTableData[0].ultrasound_healthy &&
+            data.ultrasound < assetTableData[0].ultrasound_warning) ||
+          (data.ultrasound_delta >= assetTableData[0].ultrasound_healthy &&
+            data.ultrasound_delta < assetTableData[0].ultrasound_warning)
         ) {
           health_status = "warning";
         }
         if (
-          data.temperature > assetTableData[0].temperature_warning ||
-          data.vibration_x > assetTableData[0].vibration_warning ||
-          data.vibration_y > assetTableData[0].vibration_warning ||
-          data.vibration_z > assetTableData[0].vibration_warning ||
-          data.magnetic_flux_x > assetTableData[0].vibration_warning ||
-          data.magnetic_flux_y > assetTableData[0].vibration_warning ||
-          data.magnetic_flux_z > assetTableData[0].vibration_warning
+          data.temperature >= assetTableData[0].temperature_warning ||
+          data.vibration_x >= assetTableData[0].vibration_warning ||
+          data.vibration_y >= assetTableData[0].vibration_warning ||
+          data.vibration_z >= assetTableData[0].vibration_warning ||
+          data.vibration_peak >= assetTableData[0].vibration_warning ||
+          data.magnetic_flux_x >= assetTableData[0].magnetic_flux_warning ||
+          data.magnetic_flux_y >= assetTableData[0].magnetic_flux_warning ||
+          data.magnetic_flux_z >= assetTableData[0].magnetic_flux_warning ||
+          data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_warning ||
+          data.ultrasound >= assetTableData[0].ultrasound_warning ||
+          data.ultrasound_delta >= assetTableData[0].ultrasound_warning
         ) {
           health_status = "Unhealthy";
         }
@@ -145,7 +177,7 @@ client.on("message", async (topic, payload) => {
             ]
           );
 
-          console.log("data inserted of sensor id: ", sensor_id);
+          // console.log("data inserted of sensor id: ", sensor_id);
           // counter++;
           // console.log(counter, assetDataTableName);
           // client.emit("newMessage", data);
