@@ -108,16 +108,12 @@ client.on("message", async (topic, payload) => {
             data.vibration_y < assetTableData[0].vibration_warning) ||
           (data.vibration_z >= assetTableData[0].vibration_healthy &&
             data.vibration_z < assetTableData[0].vibration_warning) ||
-          (data.vibration_peak >= assetTableData[0].vibration_healthy &&
-            data.vibration_peak < assetTableData[0].vibration_warning) ||
           (data.magnetic_flux_x >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_x < assetTableData[0].vibration_warning) ||
           (data.magnetic_flux_y >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_y < assetTableData[0].magnetic_flux_warning) ||
           (data.magnetic_flux_z >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_z < assetTableData[0].magnetic_flux_warning) ||
-          (data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_healthy &&
-            data.magnetic_flux_peak < assetTableData[0].magnetic_flux_warning) ||
           (data.ultrasound >= assetTableData[0].ultrasound_healthy &&
             data.ultrasound < assetTableData[0].ultrasound_warning) ||
           (data.ultrasound_delta >= assetTableData[0].ultrasound_healthy &&
@@ -130,11 +126,9 @@ client.on("message", async (topic, payload) => {
           data.vibration_x >= assetTableData[0].vibration_warning ||
           data.vibration_y >= assetTableData[0].vibration_warning ||
           data.vibration_z >= assetTableData[0].vibration_warning ||
-          data.vibration_peak >= assetTableData[0].vibration_warning ||
           data.magnetic_flux_x >= assetTableData[0].magnetic_flux_warning ||
           data.magnetic_flux_y >= assetTableData[0].magnetic_flux_warning ||
           data.magnetic_flux_z >= assetTableData[0].magnetic_flux_warning ||
-          data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_warning ||
           data.ultrasound >= assetTableData[0].ultrasound_warning ||
           data.ultrasound_delta >= assetTableData[0].ultrasound_warning
         ) {
