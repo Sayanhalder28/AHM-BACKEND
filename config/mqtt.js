@@ -18,33 +18,31 @@ const options = {
 const client = mqtt.connect(connectUrl, options);
 
 function publishMessage() {
-  const dummyData = JSON.stringify({
-    temperature: Math.floor(Math.random() * 100) + 1,
-    vibration_x: Math.floor(Math.random() * (5 - 3)) + 3,
-    vibration_y: Math.floor(Math.random() * (5 - 3)) + 3,
-    vibration_z: Math.floor(Math.random() * (5 - 3)) + 3,
-    vibration_peak: Math.floor(Math.random() * (14 - 3)) + 3,
-    magnetic_flux_x: Math.floor(Math.random() * (5 - 3)) + 3,
-    magnetic_flux_y: Math.floor(Math.random() * (5 - 3)) + 3,
-    magnetic_flux_z: Math.floor(Math.random() * (5 - 3)) + 3,
-    magnetic_flux_peak: Math.floor(Math.random() * (5 - 3)) + 3,
-    ultrasound: Math.floor(Math.random() * (5 - 3)) + 3,
-    ultrasound_delta: Math.floor(Math.random() * (8 - 3)) + 3,
-  });
-
   // const dummyData = JSON.stringify({
-  //   temperature: 3,
-  //   vibration_x: 3,
-  //   vibration_y: 3,
-  //   vibration_z: 3,
-  //   vibration_peak: 3,
-  //   magnetic_flux_x: 3,
-  //   magnetic_flux_y: 3,
-  //   magnetic_flux_z: 3,
-  //   magnetic_flux_peak: 12,
-  //   ultrasound: 3,
-  //   ultrasound_delta: 3,
+  //   temperature: Math.floor(Math.random() * 100) + 1,
+  //   vibration_x: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   vibration_y: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   vibration_z: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   vibration_peak: Math.floor(Math.random() * (14 - 3)) + 3,
+  //   magnetic_flux_x: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   magnetic_flux_y: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   magnetic_flux_z: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   magnetic_flux_peak: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   ultrasound: Math.floor(Math.random() * (5 - 3)) + 3,
+  //   ultrasound_delta: Math.floor(Math.random() * (8 - 3)) + 3,
   // });
+
+  const dummyData = JSON.stringify({
+    temperature: 3,
+    vibration_x: 3,
+    vibration_y: 1,
+    vibration_z: 3,
+    magnetic_flux_x: 1,
+    magnetic_flux_y: 3,
+    magnetic_flux_z: 3,
+    ultrasound: 3,
+    ultrasound_delta: 3,
+  });
   client.publish(
     "IEMA/AHM/NODE1",
     dummyData,
@@ -108,16 +106,12 @@ client.on("message", async (topic, payload) => {
             data.vibration_y < assetTableData[0].vibration_warning) ||
           (data.vibration_z >= assetTableData[0].vibration_healthy &&
             data.vibration_z < assetTableData[0].vibration_warning) ||
-          (data.vibration_peak >= assetTableData[0].vibration_healthy &&
-            data.vibration_peak < assetTableData[0].vibration_warning) ||
           (data.magnetic_flux_x >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_x < assetTableData[0].vibration_warning) ||
           (data.magnetic_flux_y >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_y < assetTableData[0].magnetic_flux_warning) ||
           (data.magnetic_flux_z >= assetTableData[0].magnetic_flux_healthy &&
             data.magnetic_flux_z < assetTableData[0].magnetic_flux_warning) ||
-          (data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_healthy &&
-            data.magnetic_flux_peak < assetTableData[0].magnetic_flux_warning) ||
           (data.ultrasound >= assetTableData[0].ultrasound_healthy &&
             data.ultrasound < assetTableData[0].ultrasound_warning) ||
           (data.ultrasound_delta >= assetTableData[0].ultrasound_healthy &&
@@ -130,63 +124,88 @@ client.on("message", async (topic, payload) => {
           data.vibration_x >= assetTableData[0].vibration_warning ||
           data.vibration_y >= assetTableData[0].vibration_warning ||
           data.vibration_z >= assetTableData[0].vibration_warning ||
-          data.vibration_peak >= assetTableData[0].vibration_warning ||
           data.magnetic_flux_x >= assetTableData[0].magnetic_flux_warning ||
           data.magnetic_flux_y >= assetTableData[0].magnetic_flux_warning ||
           data.magnetic_flux_z >= assetTableData[0].magnetic_flux_warning ||
-          data.magnetic_flux_peak >= assetTableData[0].magnetic_flux_warning ||
           data.ultrasound >= assetTableData[0].ultrasound_warning ||
           data.ultrasound_delta >= assetTableData[0].ultrasound_warning
         ) {
           health_status = "Unhealthy";
         }
 
+        // find the peak values of the vibration and magnetic flux
+        // quary the last peak value and then comapre with the current value
+        // if current value is greater than the last peak value then update the peak value
+        // else keep the last peak value
+
+        // vibration peak
+        try {
+          const [vibrationPeakValue] = await pool.execute(
+            `SELECT vibration_peak,magnetic_flux_peak FROM ${assetDataTableName} ORDER BY id DESC LIMIT 1;`
+          );
+          const vibration_peak = Math.max(
+            data.vibration_x,
+            data.vibration_y,
+            data.vibration_z,
+            vibrationPeakValue[0].vibration_peak
+          );
+          const magnetic_flux_peak = Math.max(
+            data.magnetic_flux_x,
+            data.magnetic_flux_y,
+            data.magnetic_flux_z,
+            vibrationPeakValue[0].magnetic_flux_peak
+          );
+          try {
+            const [assetDataTableInsertResponse] = await pool.execute(
+              `INSERT INTO ${assetDataTableName}
+              (
+                temperature,
+                vibration_x,
+                vibration_y, 
+                vibration_z,  
+                vibration_peak,    
+                magnetic_flux_x,
+                magnetic_flux_y,      
+                magnetic_flux_z,
+                magnetic_flux_peak,
+                ultrasound, 
+                ultrasound_delta, 
+                health_status
+              ) 
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?);`,
+              [
+                data.temperature,
+                data.vibration_x,
+                data.vibration_y,
+                data.vibration_z,
+                vibration_peak,
+                data.magnetic_flux_x,
+                data.magnetic_flux_y,
+                data.magnetic_flux_z,
+                magnetic_flux_peak,
+                data.ultrasound,
+                data.ultrasound_delta,
+                health_status,
+              ]
+            );
+  
+            // console.log("data inserted of sensor id: ", sensor_id);
+            // counter++;
+            // console.log(counter, assetDataTableName);
+            // client.emit("newMessage", data);
+          } catch (error) {
+            console.log(
+              "Error while inserting the data to the asset table \n <error message> \n",
+              error
+            );
+          }
+          
+        } catch (error) {
+          console.log("error quaring the last peak value of the vibration");
+        }
         //run quary to load the data to the specific table
 
-        try {
-          const [assetDataTableInsertResponse] = await pool.execute(
-            `INSERT INTO ${assetDataTableName}
-            (
-              temperature,
-              vibration_x,
-              vibration_y, 
-              vibration_z,  
-              vibration_peak,    
-              magnetic_flux_x,
-              magnetic_flux_y,      
-              magnetic_flux_z,
-              magnetic_flux_peak,
-              ultrasound, 
-              ultrasound_delta, 
-              health_status
-            ) 
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?);`,
-            [
-              data.temperature,
-              data.vibration_x,
-              data.vibration_y,
-              data.vibration_z,
-              data.vibration_peak,
-              data.magnetic_flux_x,
-              data.magnetic_flux_y,
-              data.magnetic_flux_z,
-              data.magnetic_flux_peak,
-              data.ultrasound,
-              data.ultrasound_delta,
-              health_status,
-            ]
-          );
 
-          // console.log("data inserted of sensor id: ", sensor_id);
-          // counter++;
-          // console.log(counter, assetDataTableName);
-          // client.emit("newMessage", data);
-        } catch (error) {
-          console.log(
-            "Error while inserting the data to the asset table \n <error message> \n",
-            error
-          );
-        }
       } else console.log("No asset table found for the sensor id: ", sensor_id);
     } catch (error) {
       console.log(
