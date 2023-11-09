@@ -1,4 +1,3 @@
-const client = require("../config/mqtt");
 const pool = require("../config/db").pool;
 
 var sensorData = ["asdfasdf", "asdfasdf", "asdfasdf", "asdfasdf"];

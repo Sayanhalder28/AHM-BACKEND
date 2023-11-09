@@ -56,6 +56,7 @@ const startServer = async () => {
     app.listen(Port, () => {
       console.log(`Server is up at ${Port}`);
     });
+    require("./config/mqtt")
   } else {
     console.log("Server is not up .  Retrying .....");
     setTimeout(startServer, 5000);
