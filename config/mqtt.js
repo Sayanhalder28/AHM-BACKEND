@@ -74,7 +74,7 @@ client.on("connect", async (connack) => {
         error
       );
     });
-  setInterval(publishMessage, 10000); //publishing the fake massage to the broker
+  setInterval(publishMessage, 100000); //publishing the fake massage to the broker
 });
 
 client.on("message", async (topic, payload) => {
