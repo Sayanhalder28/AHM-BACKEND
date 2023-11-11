@@ -1,5 +1,4 @@
 const pool = require("./db").pool;
-const { now } = require("mongoose");
 const mqtt = require("mqtt");
 const host = process.env.HOST;
 const port = process.env.PORT;
@@ -18,6 +17,7 @@ const options = {
 };
 const client = mqtt.connect(connectUrl, options);
 
+
 function publishMessage() {
   const dummyData = JSON.stringify({
     temperature: Math.floor(Math.random() * 100) + 1,
@@ -30,6 +30,7 @@ function publishMessage() {
     ultrasound: Math.floor(Math.random() * (5 - 3)) + 3,
     ultrasound_delta: Math.floor(Math.random() * (8 - 3)) + 3,
   });
+
 
   // const dummyData = JSON.stringify({
   //   temperature: 3,
@@ -244,6 +245,11 @@ client.on("error", function (err) {
       "Network error, make sure you have an active internet connection"
     );
   }
+});
+
+client.on('close', () => {
+  console.log('MQTT connection closed');
+  // You can handle connection closure here
 });
 
 // client.on("offline", function () {

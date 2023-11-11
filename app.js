@@ -32,7 +32,7 @@ app.use("/data/asset", assetRoutes);
 app.use("/data/sensor", sensorRoutes);
 
 app.get("/", async (req, res) => {
-  const [rows] = await pool.execute("SELECT * FROM users ;");
+  const [rows] = await pool.execute("SELECT * FROM sensors ;");
   res.send(rows);
 });
 
