@@ -74,11 +74,10 @@ client.on("connect", async (connack) => {
         error
       );
     });
-  setInterval(publishMessage, 4000); //publishing the fake massage to the broker
+  setInterval(publishMessage, 10000); //publishing the fake massage to the broker
 });
 
 client.on("message", async (topic, payload) => {
-  console.time("Data_inserted_in");
 
   //seperate sensor_id from the topic
   const sensor_id = topic.split("/")[2];
@@ -217,7 +216,7 @@ client.on("message", async (topic, payload) => {
             ]
           );
 
-          // console.log("data inserted of sensor id: ", sensor_id);
+          console.log("data inserted of sensor id: ", sensor_id);
           // counter++;
           // console.log(counter, assetDataTableName);
           // client.emit("newMessage", data);
@@ -235,7 +234,6 @@ client.on("message", async (topic, payload) => {
       );
     }
   } else console.log("No data sent by the sensor id:", sensor_id);
-  console.timeEnd("Data_inserted_in");
 });
 
 client.on("error", function (err) {
