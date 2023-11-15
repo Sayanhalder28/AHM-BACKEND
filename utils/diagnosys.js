@@ -127,8 +127,7 @@ const generateReport = (all_freequency_peaks, assetSpecifications) => {
   //   });
   // });
 
-  //check for misalignment
-
+  //check for Imbalance
   if (XVB_peaks.length) {
     //check is ther any 1x frequency in XVB_peaks array elements
     const is1xFrequency = XVB_peaks.some((frequency) => {
@@ -140,6 +139,7 @@ const generateReport = (all_freequency_peaks, assetSpecifications) => {
     if (is1xFrequency) report.push("Plane imbalance");
   }
 
+  //check for Overhung rotor
   if (XVB_peaks.length && YVB_peaks.length) {
     //check is ther any 1x frequency in XVB_peaks array elements
     const is1xInXVB = XVB_peaks.some((frequency) => {

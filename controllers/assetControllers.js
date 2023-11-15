@@ -221,7 +221,7 @@ const diagnoseAsset = async (req, res, next) => {
     peakFrequencies: XVB_peaks,
     dyagnoseReport: DiagnosysReport,
   });
-  // res.success(200, "Spectrum generated", spectrumData);
+  // res.success(200, "Diagnosys done successfully", DiagnosysReport);
 };
 
 module.exports = { registerAsset, getAssetList, diagnoseAsset };
