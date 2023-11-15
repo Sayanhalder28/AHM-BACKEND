@@ -92,7 +92,7 @@ const calculatePeak = (spectrumData, peakThreshold, peakDistance) => {
   return peaks;
 };
 
-const generateReport = (all_freequency_peaks, assetSpecifications) => {
+const analyseSpectrum = (all_freequency_peaks, assetSpecifications) => {
   // const report = ["imbalance", "misalignment", "bearing", "eccentricity"];
 
   const XVB_peaks = all_freequency_peaks.XVB_peaks; //radial vibration
@@ -213,5 +213,5 @@ module.exports = {
   generateDummySignal,
   generateSpectrum,
   calculatePeak,
-  generateReport,
+  analyseSpectrum,
 };

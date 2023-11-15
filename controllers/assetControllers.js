@@ -3,7 +3,7 @@ const {
   generateDummySignal,
   generateSpectrum,
   calculatePeak,
-  generateReport,
+  analyseSpectrum,
 } = require("../utils/diagnosys");
 
 const registerAsset = async (req, res, next) => {
@@ -210,18 +210,57 @@ const diagnoseAsset = async (req, res, next) => {
     US_peaks: US_peaks,
   };
 
-  const DiagnosysReport = generateReport(
+  const analisysReport = analyseSpectrum(
     all_freequency_peaks,
     assetSpecifications
   ); // takes peaks and spectrum data as argument
 
+  const DiagnosysReport = {
+    XVibration: {
+      signal: XVB_Signal,
+      spectrum: XVB_Spectrum,
+      peaks: XVB_peaks,
+    },
+    YVibration: {
+      signal: YVB_Signal,
+      spectrum: YVB_Spectrum,
+      peaks: YVB_peaks,
+    },
+    ZVibration: {
+      signal: ZVB_Signal,
+      spectrum: ZVB_Spectrum,
+      peaks: ZVB_peaks,
+    },
+    XMagneticFlux: {
+      signal: XMF_Signal,
+      spectrum: XMF_Spectrum,
+      peaks: XMF_peaks,
+    },
+    YMagneticFlux: {
+      signal: YMF_Signal,
+      spectrum: YMF_Spectrum,
+      peaks: YMF_peaks,
+    },
+    ZMagneticFlux: {
+      signal: ZMF_Signal,
+      spectrum: ZMF_Spectrum,
+      peaks: ZMF_peaks,
+    },
+    Ultrasound: {
+      signal: UU_Signal,
+      spectrum: US_Spectrum,
+      peaks: US_peaks,
+    },
+    analisysReport: analisysReport,
+  };
+
   // ** // send response to the client along with the data
-  res.render("page", {
-    spectrumData: XVB_Spectrum,
-    peakFrequencies: XVB_peaks,
-    dyagnoseReport: DiagnosysReport,
-  });
-  // res.success(200, "Diagnosys done successfully", DiagnosysReport);
+  // res.render("page", {
+  //   spectrumData: XVB_Spectrum,
+  //   peakFrequencies: XVB_peaks,
+  //   dyagnoseReport: DiagnosysReport,
+  // });
+  res.success(200, "Diagnosys done successfully", DiagnosysReport);
 };
 
 module.exports = { registerAsset, getAssetList, diagnoseAsset };
