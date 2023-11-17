@@ -7,7 +7,9 @@ router.post("/register-asset", assetControllers.registerAsset);
 
 router.get("/asset-list", assetControllers.getAssetList);
 
-router.get("/Diagnose", assetControllers.diagnoseAsset);
+router.get("/diagnose", assetControllers.diagnoseAsset);
+
+router.get("/history", assetControllers.assetHistory);
 
 
 

@@ -156,6 +156,7 @@ const getAssetList = async (req, res, next) => {
 
 // run fft on vibration data
 const diagnoseAsset = async (req, res, next) => {
+  const asset_id = req.params.asset_id;
   // ** // generate dummy signal -->> this will be replaced by the vibration data from the database or direct from device in the future
   const sampleRate = 5000;
   const XVB_Signal = generateDummySignal(sampleRate, 1); // Radial vibration in X axis
@@ -210,7 +211,7 @@ const diagnoseAsset = async (req, res, next) => {
     US_peaks: US_peaks,
   };
 
-  const analisysReport = analyseSpectrum(
+  const analysisReport = analyseSpectrum(
     all_freequency_peaks,
     assetSpecifications
   ); // takes peaks and spectrum data as argument
@@ -251,7 +252,7 @@ const diagnoseAsset = async (req, res, next) => {
       spectrum: US_Spectrum,
       peaks: US_peaks,
     },
-    analisysReport: analisysReport,
+    analisysReport: analysisReport,
   };
 
   // ** // send response to the client along with the data
@@ -263,4 +264,28 @@ const diagnoseAsset = async (req, res, next) => {
   res.success(200, "Diagnosys done successfully", DiagnosysReport);
 };
 
-module.exports = { registerAsset, getAssetList, diagnoseAsset };
+const assetHistory = async (req, res, next) => {
+  const asset_id = req.query.assetId;
+  if (!asset_id) return res.error(400, "missing parameters in the request");
+  try {
+    const quary = `SELECT sensor_type FROM sensors WHERE asset_id_fk=? ;`;
+    const [response] = await pool.execute(quary, [asset_id]);
+    if (response.length) {
+      const assetDataTables = response.map(
+        (sensor) => `asset_data_${sensor.sensor_type}_${asset_id}`
+      );
+      const fetchDataPromises = assetDataTables.map(async (tableName) => {
+        const fetchDataQuery = `SELECT * FROM ${tableName};`;
+        const [tableData] = await pool.execute(fetchDataQuery);
+        return { tableName, tableData };
+      });
+
+      const assetTablesData = await Promise.all(fetchDataPromises);
+      return res.success(200, `History of asset: ${asset_id}`, assetTablesData);
+    } else return res.error(400, "invalid asset id");
+  } catch (error) {
+    return res.error(500, "internal error");
+  }
+};
+
+module.exports = { registerAsset, getAssetList, diagnoseAsset, assetHistory };
