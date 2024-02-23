@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Spectrum Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Chart.js -->
+  </head>
+  <body>
+    <h1>Spectrum Data Chart</h1>
+
+    <!-- Create a canvas element for the chart -->
+    <canvas id="spectrumChart" width="800" height="200"></canvas>
+
+    <!-- show the peak frequencies -->
+    <div style="padding: 25px; display: flex; gap: 50px">
+      <div
+        style="
+          float: left;
+          width: 50%;
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          border: 1px solid black;
+        "
+      >
+        <h2>Peak Frequencies</h2>
+        <table>
+          <tr>
+            <th>Peak No</th>
+            <th>Peak Frequencies</th>
+          </tr>
+          <% for (let i = 0; i < peakFrequencies.length; i++) { %>
+          <tr>
+            <td><%= i+1 %></td>
+            <td><%= peakFrequencies[i] %> Hz</td>
+          </tr>
+          <% } %>
+        </table>
+      </div>
+      <div
+        style="
+          float: left;
+          width: 50%;
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          border: 1px solid black;
+        "
+      >
+        <h1>Diagnosis report</h1>
+
+        <h2>Conditions</h2>
+        <table>
+          <% for (let i = 0; i < dyagnoseReport.length; i++) { %>
+          <tr>
+            <td><%= i+1 %></td>
+            <td><%= dyagnoseReport[i] %></td>
+          </tr>
+          <% } %>
+        </table>
+      </div>
+    </div>
+
+    <script>
+        // Access the spectrum data passed from the route handler
+        const spectrumData = <%- JSON.stringify(spectrumData) %> ;
+
+        // Extract the frequency and magnitude data
+        const frequency = spectrumData.frequency;
+        const magnitude = spectrumData.magnitude;
+
+      //   console.log(frequency);
+
+        // Get a reference to the canvas element
+        const ctx = document.getElementById("spectrumChart").getContext("2d");
+
+        // Create a line chart using Chart.js
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: frequency, // X-axis labels
+            datasets: [
+              {
+                label: "Spectrum Magnitude",
+                data: magnitude, // Y-axis data
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              x: {
+                type: "linear",
+                position: "bottom",
+                title: {
+                  display: true,
+                  text: "Frequency (Hz)",
+                },
+              },
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Magnitude",
+                },
+              },
+            },
+          },
+        });
+    </script>
+  </body>
+</html>
