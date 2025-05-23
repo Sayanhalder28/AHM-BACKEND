@@ -8,7 +8,7 @@ const pool = mysql
     user: process.env.DB_User,
     password: process.env.DB_Password,
     port: process.env.DB_Port,
-    database: "IEMA_AHM",
+    database: "MY_AHM",
     // waitForConnections: true,
     connectionLimit: 100,
     multipleStatements: true,
