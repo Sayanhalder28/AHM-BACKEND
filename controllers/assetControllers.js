@@ -80,7 +80,8 @@ const registerAsset = async (req, res, next) => {
           CREATE TABLE IF NOT EXISTS asset_data_${sensor.sensor_type}_${asset_id} (
             \`id\` INT NOT NULL AUTO_INCREMENT,
             \`time_stamp\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            \`temperature\` FLOAT  NOT NULL,
+            \`temperature_one\` FLOAT  NOT NULL,
+            \`temperature_two\` FLOAT  NOT NULL,
             \`vibration_x\` FLOAT  NOT NULL,
             \`vibration_y\` FLOAT  NOT NULL,
             \`vibration_z\` FLOAT  NOT NULL,
@@ -89,8 +90,8 @@ const registerAsset = async (req, res, next) => {
             \`magnetic_flux_y\` FLOAT  NOT NULL,
             \`magnetic_flux_z\` FLOAT  NOT NULL,
             \`magnetic_flux_peak\` FLOAT  NOT NULL,
-            \`ultrasound\` FLOAT  NOT NULL,
-            \`ultrasound_delta\` FLOAT  NOT NULL,
+            \`ultra_sound\` FLOAT  NOT NULL,
+            \`audible_sound\` FLOAT  NOT NULL,
             \`health_status\` VARCHAR(10) NOT NULL DEFAULT 'healthy',
             PRIMARY KEY (\`id\`)
           ) ENGINE = InnoDB;
@@ -165,113 +166,153 @@ const getAssetList = async (req, res, next) => {
   }
 };
 
-// run fft on vibration data
 const diagnoseAsset = async (req, res, next) => {
-  const asset_id = req.params.asset_id;
-  // ** // generate dummy signal -->> this will be replaced by the vibration data from the database or direct from device in the future
-  const sampleRate = 5000;
-  const XVB_Signal = generateDummySignal(sampleRate, 1); // Radial vibration in X axis
-  const YVB_Signal = generateDummySignal(sampleRate, 1); // Axial Vibration in Y axis
-  const ZVB_Signal = generateDummySignal(sampleRate, 1); // Tangential Vibration in Z axis
-  const XMF_Signal = generateDummySignal(sampleRate, 1);
-  const YMF_Signal = generateDummySignal(sampleRate, 1);
-  const ZMF_Signal = generateDummySignal(sampleRate, 1);
-  const UU_Signal = generateDummySignal(sampleRate, 1);
+  // const asset_id = req.params.asset_id;
+  // const user_id = req.params.user_id;
 
-  // ** // Generate the spectrum from complex signal
-  const fftSampleCount = 4096; // must ge greater than the 1 and a power of 2
-  const XVB_Spectrum = generateSpectrum(XVB_Signal, sampleRate, fftSampleCount); // takes complex signal, sample rate and fft sample count as argument
-  const YVB_Spectrum = generateSpectrum(YVB_Signal, sampleRate, fftSampleCount);
-  const ZVB_Spectrum = generateSpectrum(ZVB_Signal, sampleRate, fftSampleCount);
-  const XMF_Spectrum = generateSpectrum(XMF_Signal, sampleRate, fftSampleCount);
-  const YMF_Spectrum = generateSpectrum(YMF_Signal, sampleRate, fftSampleCount);
-  const ZMF_Spectrum = generateSpectrum(ZMF_Signal, sampleRate, fftSampleCount);
-  const US_Spectrum = generateSpectrum(UU_Signal, sampleRate, fftSampleCount);
+  // run query to get the asset data from the database 
+  // const sensorsInUse = []; // array to store the sensor ids
 
-  // ** // Find pB_om the spectrum data
-  const peakThreshold = 500;
-  const peakDistance = 10;
-  const XVB_peaks = calculatePeak(XVB_Spectrum, peakThreshold, peakDistance); // takes spectrum data, peak threshold and peak distance as argument
-  const YVB_peaks = calculatePeak(YVB_Spectrum, peakThreshold, peakDistance);
-  const ZVB_peaks = calculatePeak(ZVB_Spectrum, peakThreshold, peakDistance);
-  const XMF_peaks = calculatePeak(XMF_Spectrum, peakThreshold, peakDistance);
-  const YMF_peaks = calculatePeak(YMF_Spectrum, peakThreshold, peakDistance);
-  const ZMF_peaks = calculatePeak(ZMF_Spectrum, peakThreshold, peakDistance);
-  const US_peaks = calculatePeak(US_Spectrum, peakThreshold, peakDistance);
 
-  // ** // generate the report
-  const assetSpecifications = {
-    ratedRPM: 3000,
-    ratedPower: 1000,
-    ratedVoltage: 1000,
-    ratedCurrent: 1000,
-    ratedFrequency: 1000,
-    ratedEfficiency: 1000,
-    ratedPowerFactor: 1000,
-    ratedTorque: 1000,
-    ratedSpeed: 1000,
-  };
+  // request sample data from the sensors
 
-  const all_freequency_peaks = {
-    XVB_peaks: XVB_peaks,
-    YVB_peaks: YVB_peaks,
-    ZVB_peaks: ZVB_peaks,
-    XMF_peaks: XMF_peaks,
-    YMF_peaks: YMF_peaks,
-    ZMF_peaks: ZMF_peaks,
-    US_peaks: US_peaks,
-  };
+  // const sampleData = {};
 
-  const analysisReport = analyseSpectrum(
-    all_freequency_peaks,
-    assetSpecifications
-  ); // takes peaks and spectrum data as argument
+  // LOOP START(sensorsInUse) 
+    // request diagnosys data from the sensors --> newSampleData
+    // const sampleId = store the newSampleData in sample table
+    // sampleData = { ...sampleData, sample{i} :{id : sampleId , newSampleData} }
+  // LOOP END() 
 
-  const DiagnosysReport = {
-    XVibration: {
-      signal: XVB_Signal,
-      spectrum: XVB_Spectrum,
-      peaks: XVB_peaks,
-    },
-    YVibration: {
-      signal: YVB_Signal,
-      spectrum: YVB_Spectrum,
-      peaks: YVB_peaks,
-    },
-    ZVibration: {
-      signal: ZVB_Signal,
-      spectrum: ZVB_Spectrum,
-      peaks: ZVB_peaks,
-    },
-    XMagneticFlux: {
-      signal: XMF_Signal,
-      spectrum: XMF_Spectrum,
-      peaks: XMF_peaks,
-    },
-    YMagneticFlux: {
-      signal: YMF_Signal,
-      spectrum: YMF_Spectrum,
-      peaks: YMF_peaks,
-    },
-    ZMagneticFlux: {
-      signal: ZMF_Signal,
-      spectrum: ZMF_Spectrum,
-      peaks: ZMF_peaks,
-    },
-    Ultrasound: {
-      signal: UU_Signal,
-      spectrum: US_Spectrum,
-      peaks: US_peaks,
-    },
-    analisysReport: analysisReport,
-  };
 
-  // ** // send response to the client along with the data
-  // res.render("page", {
-  //   spectrumData: XVB_Spectrum,
-  //   peakFrequencies: XVB_peaks,
-  //   dyagnoseReport: DiagnosysReport,
-  // });
+  // run the diagnosys algorithm on each sensor sample data
+
+  // const processedSample = {};
+
+  // LOOP START(sampleData)
+    // const FFTResult = runFFT(sampleData[i]);
+    // store the FFTResult in the processed_samples table
+    // processedSampleData = { ...processedSampleData, processedSample{i}:{sampleId : sampleId , FFTResult} }
+  // LOOP END() 
+
+  // Run the final model on the processed sensor data
+
+  // const finalResult = runFinalModel(processedSampleData);
+
+  // store report in the diagnosys_report table 
+
+  // store report and sample link in diagnosys_samples_meta table
+
+  // send the success response 
+
+
+
+  
+  // const asset_id = req.params.asset_id;
+  // // ** // generate dummy signal -->> this will be replaced by the vibration data from the database or direct from device in the future
+  // const sampleRate = 5000;
+  // const XVB_Signal = generateDummySignal(sampleRate, 1); // Radial vibration in X axis
+  // const YVB_Signal = generateDummySignal(sampleRate, 1); // Axial Vibration in Y axis
+  // const ZVB_Signal = generateDummySignal(sampleRate, 1); // Tangential Vibration in Z axis
+  // const XMF_Signal = generateDummySignal(sampleRate, 1);
+  // const YMF_Signal = generateDummySignal(sampleRate, 1);
+  // const ZMF_Signal = generateDummySignal(sampleRate, 1);
+  // const UU_Signal = generateDummySignal(sampleRate, 1);
+
+  // // ** // Generate the spectrum from complex signal
+  // const fftSampleCount = 4096; // must ge greater than the 1 and a power of 2
+  // const XVB_Spectrum = generateSpectrum(XVB_Signal, sampleRate, fftSampleCount); // takes complex signal, sample rate and fft sample count as argument
+  // const YVB_Spectrum = generateSpectrum(YVB_Signal, sampleRate, fftSampleCount);
+  // const ZVB_Spectrum = generateSpectrum(ZVB_Signal, sampleRate, fftSampleCount);
+  // const XMF_Spectrum = generateSpectrum(XMF_Signal, sampleRate, fftSampleCount);
+  // const YMF_Spectrum = generateSpectrum(YMF_Signal, sampleRate, fftSampleCount);
+  // const ZMF_Spectrum = generateSpectrum(ZMF_Signal, sampleRate, fftSampleCount);
+  // const US_Spectrum = generateSpectrum(UU_Signal, sampleRate, fftSampleCount);
+
+  // // ** // Find pB_om the spectrum data
+  // const peakThreshold = 500;
+  // const peakDistance = 10;
+  // const XVB_peaks = calculatePeak(XVB_Spectrum, peakThreshold, peakDistance); // takes spectrum data, peak threshold and peak distance as argument
+  // const YVB_peaks = calculatePeak(YVB_Spectrum, peakThreshold, peakDistance);
+  // const ZVB_peaks = calculatePeak(ZVB_Spectrum, peakThreshold, peakDistance);
+  // const XMF_peaks = calculatePeak(XMF_Spectrum, peakThreshold, peakDistance);
+  // const YMF_peaks = calculatePeak(YMF_Spectrum, peakThreshold, peakDistance);
+  // const ZMF_peaks = calculatePeak(ZMF_Spectrum, peakThreshold, peakDistance);
+  // const US_peaks = calculatePeak(US_Spectrum, peakThreshold, peakDistance);
+
+  // // ** // generate the report
+  // const assetSpecifications = {
+  //   ratedRPM: 3000,
+  //   ratedPower: 1000,
+  //   ratedVoltage: 1000,
+  //   ratedCurrent: 1000,
+  //   ratedFrequency: 1000,
+  //   ratedEfficiency: 1000,
+  //   ratedPowerFactor: 1000,
+  //   ratedTorque: 1000,
+  //   ratedSpeed: 1000,
+  // };
+
+  // const all_freequency_peaks = {
+  //   XVB_peaks: XVB_peaks,
+  //   YVB_peaks: YVB_peaks,
+  //   ZVB_peaks: ZVB_peaks,
+  //   XMF_peaks: XMF_peaks,
+  //   YMF_peaks: YMF_peaks,
+  //   ZMF_peaks: ZMF_peaks,
+  //   US_peaks: US_peaks,
+  // };
+
+  // const analysisReport = analyseSpectrum(
+  //   all_freequency_peaks,
+  //   assetSpecifications
+  // ); // takes peaks and spectrum data as argument
+
+  // const DiagnosysReport = {
+  //   XVibration: {
+  //     signal: XVB_Signal,
+  //     spectrum: XVB_Spectrum,
+  //     peaks: XVB_peaks,
+  //   },
+  //   YVibration: {
+  //     signal: YVB_Signal,
+  //     spectrum: YVB_Spectrum,
+  //     peaks: YVB_peaks,
+  //   },
+  //   ZVibration: {
+  //     signal: ZVB_Signal,
+  //     spectrum: ZVB_Spectrum,
+  //     peaks: ZVB_peaks,
+  //   },
+  //   XMagneticFlux: {
+  //     signal: XMF_Signal,
+  //     spectrum: XMF_Spectrum,
+  //     peaks: XMF_peaks,
+  //   },
+  //   YMagneticFlux: {
+  //     signal: YMF_Signal,
+  //     spectrum: YMF_Spectrum,
+  //     peaks: YMF_peaks,
+  //   },
+  //   ZMagneticFlux: {
+  //     signal: ZMF_Signal,
+  //     spectrum: ZMF_Spectrum,
+  //     peaks: ZMF_peaks,
+  //   },
+  //   Ultrasound: {
+  //     signal: UU_Signal,
+  //     spectrum: US_Spectrum,
+  //     peaks: US_peaks,
+  //   },
+  //   analisysReport: analysisReport,
+  // };
+
+  // // ** // send response to the client along with the data
+  // // res.render("page", {
+  // //   spectrumData: XVB_Spectrum,
+  // //   peakFrequencies: XVB_peaks,
+  // //   dyagnoseReport: DiagnosysReport,
+  // // });
   res.success(200, "Diagnosys done successfully", DiagnosysReport);
 };
 

@@ -1,7 +1,6 @@
 const pool = require("../config/db").pool;
-const JWT_SECRET = "MoyeMoye";
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { generateToken } = require("../services/Authentication");
 
 const getUsersData = async (req, res, next) => {
   try {
@@ -73,7 +72,16 @@ const signIn = async (req, res, next) => {
             id: userDataResponse[0].username,
           },
         };
-        const authToken = jwt.sign(data, JWT_SECRET);
+
+        const authToken = generateToken(data);
+        
+        //set token to the response cookie
+        res.cookie("token", authToken, {
+          httpOnly: true,
+          // secure: true,
+          // sameSite: "none",
+          // maxAge: 1000 * 60 * 60 * 24,
+        });
 
         res.success(200, "Sign in granted. Session token is set succesfully", {
           profile: {

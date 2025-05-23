@@ -147,7 +147,7 @@ const sensorHealthTimeline = async (req, res, next) => {
     if (!asset_id) return res.error(400, "missing parameters in the request");
     try {
       const quary = `SELECT health_status, time_stamp 
-                     FROM asset_data_DE_BOF_92340 
+                     FROM asset_data_${sensor_type}_${asset_id}
                       WHERE 
                       (DATE(time_stamp) = DATE(NOW() - INTERVAL '18:30' HOUR_MINUTE) AND TIME(time_stamp) >= '18:30:00') -- Yesterday's records from 18:30 onwards
                       OR 

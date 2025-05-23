@@ -1,35 +1,35 @@
 {
-  "name": "ahm-backend",
+  "name": "sail-backend",
   "version": "1.0.0",
-  "description": "asset health monitoring backend server",
-  "main": "index.js",
+  "description": "",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "Node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sayanhalder28/AHM-BACKEND.git"
+    "url": "git+https://github.com/iemaserver/sail-backend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Sayanhalder28/AHM-BACKEND/issues"
+    "url": "https://github.com/iemaserver/sail-backend/issues"
   },
-  "homepage": "https://github.com/Sayanhalder28/AHM-BACKEND#readme",
+  "homepage": "https://github.com/iemaserver/sail-backend#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.0.3",
     "dsp.js": "^1.0.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "fft.js": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
-    "moment-timezone": "^0.5.45",
-    "mqtt": "^5.3.5",
-    "mysql2": "^3.9.1"
+    "moment-timezone": "^0.5.44",
+    "mqtt": "^4.3.7",
+    "mysql2": "^3.5.2"
   }
 }

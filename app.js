@@ -9,7 +9,8 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const { pool, DbConnection } = require("./config/db");
-const { connect } = require("mqtt");
+const { verifyToken } = require("./services/Authentication");
+const { diagnose } = require("./services/Diagnosys/Diagnose");
 
 app.set("view engine", "ejs");
 
@@ -30,6 +31,7 @@ const corsOptions = {
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
+  credentials: true,
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -45,8 +47,8 @@ const sensorRoutes = require("./routes/sensorRoutes").router;
 
 //use Routes
 app.use("/v1", userRoutes);
-app.use("/data/workshop", workshopRoutes);
-app.use("/data/asset", assetRoutes);
+app.use("/data/workshop", verifyToken, workshopRoutes);
+app.use("/data/asset", verifyToken, assetRoutes);
 app.use("/data/sensor", sensorRoutes);
 
 app.get("/db", async (req, res) => {
@@ -56,6 +58,8 @@ app.get("/db", async (req, res) => {
   // release the connection
   return res.send({ ProcessList, ShowStatus });
 });
+
+app.get("/test", diagnose);
 
 //Handling Unknown Requests
 app.use((req, res) => {
@@ -84,7 +88,3 @@ const startServer = async () => {
   }
 };
 startServer();
-
-// app.listen(Port, () => {
-//   console.log(`Server is up at ${Port}`);
-// });
