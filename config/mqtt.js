@@ -70,7 +70,7 @@ client.on("connect", async () => {
         error
       );
     });
-  setInterval(publishMessage, 3000);
+  // setInterval(publishMessage, 3000);
 });
 
 client.on("message", async (topic, payload) => {
